@@ -1,0 +1,14 @@
+li {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+.checked {
+    text-decoration: line-through
+}
