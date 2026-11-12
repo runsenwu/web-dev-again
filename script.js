@@ -1,106 +1,74 @@
-let todos = localStorage.getItem("todos")
+let currentState = localStorage.getItem("todos")
 
-let ul = document.querySelector("ul")
+let tasks = currentState ? JSON.parse(currentState) : []
 
-if (todos) {
-    ul.replaceChildren()
-
-    let values = JSON.parse(todos)
-    console.log(values)
-    for (let value of values) {
-
-        let li = createTask(value.text)
-
-        let checkbox = li.querySelector("input")
-
-        checkbox.checked = value.done
-
-        li.classList.toggle('checked', checkbox.checked);
-
-        ul.append(li)
-    }
-}
+render()
 
 const btn = document.querySelector("#add-btn");
 
 btn.addEventListener("click", function (event) {
-    console.log("Clicked!")
+    let id = crypto.randomUUID()
 
-    /** @type {HTMLInputElement} */
     let input = document.getElementById("task-input");
-    console.log(input.value)
 
-    /** @type {HTMLUListElement} */
-    let listStart = document.getElementsByTagName("ul");
+    let text = input.value;
 
-    firstUl = listStart[0];
-
-    firstUl.appendChild(createTask(input.value))
+    tasks.unshift({ id: id, text: text, done: false })
 
     input.value = input.defaultValue;
+
+    save()
+    render()
 })
 
-const saveBtn = document.querySelector("#save")
-
-saveBtn.addEventListener("click", function (event) {
-    let list = document.querySelectorAll("li")
-
-    let values = []
-
-    for (let i = values.length; i < list.length; i++) {
-        let li = list[i]
-
-        /** @type {HTMLLabelElement} */
-        let label = li.querySelector("label")
-
-        /** @type {HTMLLabelElement} */
-        let checkbox = li.querySelector("input")
-
-        values.push(
-            {
-                text: label.textContent,
-                done: checkbox.checked
-            }
-        )
-    }
-
-    localStorage.setItem("todos", JSON.stringify(values))
-})
-
-/** @type {NodeList<HTMLLIElement>} */
-const lists = document.querySelectorAll('li')
-
-for (const list of lists) {
-    /** @type {NodeList<HTMLLabelElement>} */
-    let label = list.querySelector("label")
-    addingLabelFunctionality(label, list)
-}
-
-function createTask(text) {
+function createTask(task) {
     let list = document.createElement("li")
+    list.classList.toggle('checked', task.done)
 
     /** @type {HTMLInputElement} */
     let checkbox = document.createElement("input")
     checkbox.type = "checkbox";
+    checkbox.checked = task.done
 
     let label = document.createElement("label")
+    label.append(checkbox, task.text)
 
-    label.append(checkbox, text)
+    addingLabelFunctionality(label, task)
 
-    addingLabelFunctionality(label, list)
+    let deleteBox = document.createElement("button")
+    deleteBox.textContent = "delete"
+    deleteBox.classList.add('delete')
 
-    list.appendChild(label)
+    deleteBox.addEventListener("click", function (event) {
+        tasks = tasks.filter(t => t.id !== task.id)
+
+        save()
+        render()
+    })
+
+    list.append(label, deleteBox)
 
     return list
 }
 
-function addingLabelFunctionality(label, list) {
+function addingLabelFunctionality(label, task) {
     label.addEventListener("change", function (event) {
-        console.log("Checked box!", this)
-
-        /** @type {HTMLInputElement} */
-        const checkbox = list.querySelector('input')
-
-        list.classList.toggle('checked', checkbox.checked);
+        task.done = event.target.checked
+        save()
+        render()
     })
+}
+
+function save() {
+    localStorage.setItem("todos", JSON.stringify(tasks))
+}
+
+function render() {
+    let ul = document.querySelector("ul")
+
+    ul.replaceChildren()
+
+    for (let task of tasks) {
+        ul.append(createTask(task))
+    }
 }

@@ -12,3 +12,7 @@ ul {
 .checked {
     text-decoration: line-through
 }
+
+.delete {
+    margin-left: 20px;
+}
